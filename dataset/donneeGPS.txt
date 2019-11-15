@@ -1,0 +1,7 @@
+Site       : latitude, longitude
+Bertol Inf : 46.00100, 7.49173
+Tsidjore*  : 46.01874, 7.47568
+Ferpècle*  : 46.05802, 7.54963
+Edelweiss* : 46.14701, 7.92817
+Gornera*   : 45.99422, 7.72691
+Stafel*    : 46.10155, 7.98082
