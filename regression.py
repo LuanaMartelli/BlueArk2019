@@ -70,11 +70,21 @@ def get_dummy_hours(index):
     return dummy
 
 if __name__ == '__main__':
-#    bertol = pd.read_excel("dataset/original_excel/debit_Bertol_inferieur.xlsx")
+    bertolDebit = pd.read_excel("dataset/original_excel/debit_Bertol_inferieur.xlsx")
+    bertolDebitClean = clean_debit(bertolDebit)
+    bertolDebitClean.to_csv("dataset/clean_data/debit_bertol.csv")
 
     arollaPluie = pd.read_excel("dataset/original_excel/pluie_Arolla.xlsx")
     arolla_pluie_diff = pluie(arollaPluie)
 #    arolla_pluie_diff.to_csv("dataset/clean_data/arollaPluie_diff.csv")
+
+    bricolaPluie = pd.read_excel("dataset/original_excel/pluie_Bricola.xlsx")
+    bricola_pluie_diff = pluie(bricolaPluie)
+    bricola_pluie_diff.to_csv("dataset/clean_data/pluie_bricola.csv")
+
+    gorneraPluie = pd.read_excel("dataset/original_excel/pluie_Gornera.xlsx")
+    gornera_pluie_diff = pluie(gorneraPluie)
+    gornera_pluie_diff.to_csv("dataset/clean_data/pluie_gornera.csv")
 
     tsijiore = pd.read_excel("dataset/original_excel/debit_Tsijiore.xlsx")
     tsijiore_stack_clean = clean_debit(tsijiore)
@@ -83,7 +93,6 @@ if __name__ == '__main__':
     arollaTemp = pd.read_excel("dataset/original_excel/temperature_Arolla.xlsx")
     arollaTemp_stack = temperature(arollaTemp)
 #    arollaTemp_stack.to_csv("dataset/clean_data/arollaTemp.csv")
-
 
     edelweissDebit = pd.read_excel("dataset/original_excel/debit_edelweiss.xlsx")
     edelweissDebit = clean_debit(edelweissDebit)
