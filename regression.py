@@ -3,6 +3,7 @@ import numpy as np
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
 
+
 def stack_data(arolla):
     arolla = arolla.iloc[1:,:]
     arolla2019 = arolla.iloc[:,0]
@@ -54,40 +55,52 @@ def ensoleillement(soleil):
     shine[shine < 1] = 0
     return shine
 
+def get_dummy(index):
+    months = index.month.unique()[:-1]
+    dummy = pd.DataFrame(0, index=index, columns=months)
+    for m in months:
+        dummy.loc[index.month == m, m] = 1
+    return dummy
+
+def get_dummy_hours(index):
+    hour = index.hour.unique()
+    dummy = pd.DataFrame(0, index=index, columns=hour)
+    for h in hour:
+        dummy.loc[index.hour == h, h] = 1
+    return dummy
+
 if __name__ == '__main__':
-    bertol = pd.read_excel("dataset/original_excel/debit_Bertol_inferieur.xlsx")
+#    bertol = pd.read_excel("dataset/original_excel/debit_Bertol_inferieur.xlsx")
 
     arollaPluie = pd.read_excel("dataset/original_excel/pluie_Arolla.xlsx")
     arolla_pluie_diff = pluie(arollaPluie)
-    arolla_pluie_diff.to_csv("dataset/clean_data/arollaPluie_diff.csv")
+#    arolla_pluie_diff.to_csv("dataset/clean_data/arollaPluie_diff.csv")
 
     tsijiore = pd.read_excel("dataset/original_excel/debit_Tsijiore.xlsx")
     tsijiore_stack_clean = clean_debit(tsijiore)
-    tsijiore_stack_clean.to_csv("dataset/clean_data/debitTsijiore.csv")
+#    tsijiore_stack_clean.to_csv("dataset/clean_data/debitTsijiore.csv")
 
     arollaTemp = pd.read_excel("dataset/original_excel/temperature_Arolla.xlsx")
     arollaTemp_stack = temperature(arollaTemp)
-    arollaTemp_stack.to_csv("dataset/clean_data/arollaTemp.csv")
+#    arollaTemp_stack.to_csv("dataset/clean_data/arollaTemp.csv")
 
 
     edelweissDebit = pd.read_excel("dataset/original_excel/debit_edelweiss.xlsx")
     edelweissDebit = clean_debit(edelweissDebit)
-    edelweissDebit.to_csv("dataset/clean_data/edelweissDebit.csv")
+#    edelweissDebit.to_csv("dataset/clean_data/edelweissDebit.csv")
 
     zmuttTemp = pd.read_excel("dataset/original_excel/temperature_Zmutt.xlsx")
     zmuttTemp = temperature(zmuttTemp)
-    zmuttTemp.to_csv("dataset/clean_data/zmuttTemp.csv")
+#    zmuttTemp.to_csv("dataset/clean_data/zmuttTemp.csv")
 
     pluie_Findelen = pd.read_excel("dataset/original_excel/pluie_Findelen.xlsx")
     pluie_Findelen = pluie(pluie_Findelen)
-    pluie_Findelen.to_csv("dataset/clean_data/pluie_Findelen.csv")
+#    pluie_Findelen.to_csv("dataset/clean_data/pluie_Findelen.csv")
 
     rayonnement_Findelen = pd.read_excel("dataset/original_excel/rayonnement_Findelen.xlsx")
     rayonnement_Findelen = ensoleillement(rayonnement_Findelen)
-    rayonnement_Findelen.to_csv("dataset/clean_data/rayonnement_Findelen.csv")
+#    rayonnement_Findelen.to_csv("dataset/clean_data/rayonnement_Findelen.csv")
 
-
-    pd.concat([arollaTemp_stack, tsijiore_stack_clean], axis=1).dropna()
 
     Xy = pd.concat([arollaTemp_stack.shift(12).replace(0,np.NaN), np.sqrt(tsijiore_stack_clean)], axis=1).dropna().astype(float)
     res = sm.OLS(np.asarray(Xy.iloc[:, -1]), sm.add_constant(np.asarray(Xy.iloc[:, 0:-1]))).fit()
@@ -100,7 +113,90 @@ if __name__ == '__main__':
     plt.title('Tsidjore')
 
     plt.plot(np.sort(Xy.iloc[:, 0]), res.params[1] * np.sort(Xy.iloc[:, 0]) + res.params[0])
-    # diff = arolla_stack.diff()
+
+    resid = pd.Series(res.resid, Xy.index)
+    change_of_year = [False] + list((resid.index[1:] - resid.index[0:-1]) > pd.Timedelta(days=1))
+    resid[change_of_year] = np.NaN
+    plt.figure(); resid.plot()
+    plt.title('residuals debit vs temperature')
+
+    dummy = get_dummy(tsijiore_stack_clean.index)
+
+    Xy = pd.concat([arollaTemp_stack.shift(12).replace(0, np.NaN), dummy, np.sqrt(tsijiore_stack_clean)],
+                   axis=1).dropna().astype(float)
+    res = sm.OLS(np.asarray(Xy.iloc[:, -1]), np.asarray(Xy.iloc[:, 0:-1])).fit()
+    res.summary()
+
+    months = Xy.index.month.unique()[:-1]
+    for m in months:
+        XX = Xy.loc[Xy.index.month == m, :].iloc[:,0]
+        yy = Xy.loc[Xy.index.month == m, :].iloc[:, -1]
+        pd.concat([XX, yy], axis=1).plot.scatter(0, 1, alpha=0.1)
+        plt.xlabel('temperature')
+        plt.ylabel('debit')
+        plt.title('Tsidjore')
+    plt.figure()
+    pd.Series(res.resid, Xy.index).plot()
+
+    # D t-3h, month, T t-3h
+    Xy = pd.concat([arollaTemp_stack.shift(12).replace(0, np.NaN), np.sqrt(tsijiore_stack_clean).shift(12), dummy, np.sqrt(tsijiore_stack_clean)],
+                   axis=1).dropna().astype(float)
+    res = sm.OLS(np.asarray(Xy.iloc[:, -1]), np.asarray(Xy.iloc[:, 0:-1])).fit()
+    res.summary()
+    months = Xy.index.month.unique()[:-1]
+
+    for m in months:
+        XX = Xy.loc[Xy.index.month == m, :].iloc[:, 0]
+        yy = Xy.loc[Xy.index.month == m, :].iloc[:, -1]
+        pd.concat([XX, yy], axis=1).plot.scatter(0, 2, alpha=0.1)
+        plt.xlabel('temperature')
+        plt.ylabel('debit')
+        plt.title('Tsidjore')
+    pd.Series(res.resid, Xy.index).plot()
+
+
+
+    dummy_hour = get_dummy_hours(tsijiore_stack_clean.index)
+    Xy = pd.concat([arollaTemp_stack.shift(12).replace(0, np.NaN), np.sqrt(tsijiore_stack_clean).shift(12), dummy, dummy_hour, np.sqrt(tsijiore_stack_clean)],
+                   axis=1).dropna().astype(float)
+    res = sm.OLS(np.asarray(Xy.iloc[:, -1]), np.asarray(Xy.iloc[:, 0:-1])).fit()
+    res.summary()
+    plt.figure()
+    pd.Series(res.resid, Xy.index).plot()
+
+    error = (pd.Series(res.resid, Xy.index).abs() / Xy.iloc[:, -1].abs().median())
+    error.mean()
+    mse = np.sqrt(np.mean(res.resid**2))
+
+    # add sqrt T and d d3
+    D = np.sqrt(tsijiore_stack_clean).shift(12)
+    Ds = D.shift(4*3) - D
+    ddd = Ds.shift(4*24).rolling(window=4*24* 3).mean()
+    Xy = pd.concat(
+        [arollaTemp_stack.abs().apply(lambda x: np.sqrt(x)).shift(12).replace(0, np.NaN),
+         arollaTemp_stack.shift(12).replace(0, np.NaN), np.sqrt(tsijiore_stack_clean).shift(12), ddd, arolla_pluie_diff.shift(12), dummy, dummy_hour,
+         np.sqrt(tsijiore_stack_clean)],
+        axis=1).dropna().astype(float)
+    res = sm.OLS(np.asarray(Xy.iloc[:, -1]), np.asarray(Xy.iloc[:, 0:-1])).fit()
+    res.summary()
+    plt.figure()
+    pd.Series(res.resid, Xy.index).plot()
+    se = pd.concat([Xy.iloc[:,-1] + res.resid, Xy.iloc[:,-1]],axis=1)
+    se.columns = ["predicted","actual"]
+    plt.figure();se.plot()
+    plt.figure();se.plot.scatter(x=se.columns[0],y=se.columns[1])
+
+    e = pd.Series(res.resid, Xy.index)[Xy.index.month != 5]
+    error = (e.abs() / Xy.iloc[:, -1].abs().median())
+    error.mean()
+    mse = np.sqrt(np.mean(e ** 2))
+
+
+
+
+
+
+# diff = arolla_stack.diff()
     #
     # change_of_year = [False] + list((diff.index[1:] - diff.index[0:-1]) > pd.Timedelta(days=1))
     #
