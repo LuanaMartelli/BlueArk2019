@@ -19,6 +19,9 @@ object Chart {
         ).asInstanceOf[Data]
       ),
       js.Dynamic.literal(
+        title = js.Dynamic.literal(
+          text = "Prise d’eau de Tsijiore — Prévision pour le 17 nov. 2019"
+        ),
         yaxis = js.Dynamic.literal(
           title = "Débit (m³/min)"
         ),
