@@ -49,7 +49,8 @@ val server =
     .settings(
       libraryDependencies ++= Seq(
         "com.github.haifengl" %% "smile-scala" % "1.5.3",
-        "org.julienrf" %% "endpoints-play-server" % endpointsVersion
+        "org.julienrf" %% "endpoints-play-server" % endpointsVersion,
+        "com.nrinaudo" %% "kantan.csv" % "0.6.0"
       ),
       WebKeys.packagePrefix in Assets := "public/",
       WebKeys.exportedMappings in Assets := Seq(), // https://github.com/playframework/playframework/issues/5242
