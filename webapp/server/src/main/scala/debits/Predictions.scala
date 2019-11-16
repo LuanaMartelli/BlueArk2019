@@ -1,22 +1,35 @@
 package debits
 
+import java.net.URL
 import java.time.Instant
 
+import kantan.codecs.resource.ResourceIterator
 import smile.data.{AttributeDataset, NumericAttribute}
-import smile.{read, regression, validation}
+import smile.{read, regression, validation, plot }
+import kantan.csv.ops._
+import kantan.csv._
 
 object Predictions {
 
-  def file(name: String) = s"src/main/dataset/$name"
+  def file(name: String) = new URL(s"file:src/main/dataset/$name")
 
-  val temperature = read.csv(file("arolla-temperature.csv"), header = true, rowNames = true)
+  def read(url: URL): Array[Double] = {
+    url.asCsvReader[(String, Double)](rfc.withHeader)
+      .toArray
+      .flatMap {
+        case Left(value)   => sys.error(value.toString)
+        case Right((_, v)) => Array(v)
+      }
+  }
 
-  val debits = read.csv(file("tsijiore.csv"), response = Some(new NumericAttribute("Debits") -> 1), header = true, rowNames = true)
+  val temperature = read(file("arollaTemp.csv"))
+  val pluie = read(file("arollaPluie_diff.csv"))
 
-  val x = temperature.x().map(_.take(1))
-  val y = debits.y()
+  val debits = read(file("debitTsijiore.csv"))
 
-  val data: AttributeDataset = new AttributeDataset("Debits", x, y)
+  val features = temperature.zip(pluie).map { case (t, p) => Array(t, p)  }
+
+  val data: AttributeDataset = new AttributeDataset("Debits", features, debits)
 
   val n = data.size() / 2
   val train = data.head(n)
@@ -31,8 +44,10 @@ object Predictions {
 //  println(validation.rmse(test.y, predictions))
 //  println(validation.mad(test.y, predictions))
 
+//  val w = plot.qqplot(train.y, predictions)
+
   val arollaTsijiores = Point(46.02619, 7.47689)
-  val bertolInf = Point(46.00100, 7.49173)
+  val bertolInf       = Point(46.00100, 7.49173)
 
   val last24Hours = data.range(data.size() - 24 * 4, data.size())
 
