@@ -14,6 +14,7 @@ object Main {
   leaflet.CSS
   materializecss.CSS
   materializecss.JS
+  typings.plotlyDotJs.plotlyDotJsRequire
 
   def main(args: Array[String]): Unit = {
 
@@ -47,7 +48,7 @@ object Main {
             L.latLng(point.lat, point.lon),
             L.CircleMarkerOptions(color = s"rgb(${color.red}, ${color.green}, ${color.blue})")
           )
-          popup(marker)
+          popup(marker, new js.Date(run.init.toString), js.Array(debits.map(_.debit): _*))
           marker.bindTooltip(tooltipMessage(init.debit, run.init))
           marker.addTo(map)
           timeSlider.selectedTime.foreach { i =>
@@ -64,11 +65,12 @@ object Main {
 
   }
 
-  def popup(marker: L.CircleMarker[_]): Unit = {
+  def popup(marker: L.CircleMarker[_], z: js.Date, data: js.Array[Double]): Unit = {
     import com.raquo.laminar.api.L._
-    val chart = DebitsClient.assets.href(DebitsClient.asset("charts", "350x150.png"))
-    val element = div(img(src := chart)).ref.asInstanceOf[typings.std.HTMLElement]
-    marker.bindPopup(element, L.PopupOptions(minWidth = 400))
+//    val chart = DebitsClient.assets.href(DebitsClient.asset("charts", "350x150.png"))
+    val element = div().ref.asInstanceOf[typings.std.HTMLElement]
+    marker.bindPopup(element, L.PopupOptions(minWidth = 800))
+    Chart.draw(element, z, data)
   }
 
   def tooltipMessage(debit: Double, t: Instant): String = {
