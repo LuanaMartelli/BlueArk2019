@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+import statsmodels.api as sm
+import matplotlib.pyplot as plt
 
 def stack_data(arolla):
     arolla = arolla.iloc[1:,:]
@@ -47,6 +49,11 @@ def clean_debit(debit):
     debit[change_of_year] = np.NaN
     return debit
 
+def ensoleillement(soleil):
+    shine = stack_data(soleil)
+    shine[shine < 1] = 0
+    return shine
+
 if __name__ == '__main__':
     bertol = pd.read_excel("dataset/original_excel/debit_Bertol_inferieur.xlsx")
 
@@ -61,6 +68,38 @@ if __name__ == '__main__':
     arollaTemp = pd.read_excel("dataset/original_excel/temperature_Arolla.xlsx")
     arollaTemp_stack = temperature(arollaTemp)
     arollaTemp_stack.to_csv("dataset/clean_data/arollaTemp.csv")
+
+
+    edelweissDebit = pd.read_excel("dataset/original_excel/debit_edelweiss.xlsx")
+    edelweissDebit = clean_debit(edelweissDebit)
+    edelweissDebit.to_csv("dataset/clean_data/edelweissDebit.csv")
+
+    zmuttTemp = pd.read_excel("dataset/original_excel/temperature_Zmutt.xlsx")
+    zmuttTemp = temperature(zmuttTemp)
+    zmuttTemp.to_csv("dataset/clean_data/zmuttTemp.csv")
+
+    pluie_Findelen = pd.read_excel("dataset/original_excel/pluie_Findelen.xlsx")
+    pluie_Findelen = pluie(pluie_Findelen)
+    pluie_Findelen.to_csv("dataset/clean_data/pluie_Findelen.csv")
+
+    rayonnement_Findelen = pd.read_excel("dataset/original_excel/rayonnement_Findelen.xlsx")
+    rayonnement_Findelen = ensoleillement(rayonnement_Findelen)
+    rayonnement_Findelen.to_csv("dataset/clean_data/rayonnement_Findelen.csv")
+
+
+    pd.concat([arollaTemp_stack, tsijiore_stack_clean], axis=1).dropna()
+
+    Xy = pd.concat([arollaTemp_stack.shift(12).replace(0,np.NaN), np.sqrt(tsijiore_stack_clean)], axis=1).dropna().astype(float)
+    res = sm.OLS(np.asarray(Xy.iloc[:, -1]), sm.add_constant(np.asarray(Xy.iloc[:, 0:-1]))).fit()
+    res.summary()
+    Xy.corr()
+
+    Xy.plot.scatter(0, 1, alpha=0.01)
+    plt.xlabel('temperature')
+    plt.ylabel('debit')
+    plt.title('Tsidjore')
+
+    plt.plot(np.sort(Xy.iloc[:, 0]), res.params[1] * np.sort(Xy.iloc[:, 0]) + res.params[0])
     # diff = arolla_stack.diff()
     #
     # change_of_year = [False] + list((diff.index[1:] - diff.index[0:-1]) > pd.Timedelta(days=1))
