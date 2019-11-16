@@ -48,19 +48,19 @@ def clean_debit(debit):
     return debit
 
 if __name__ == '__main__':
-    bertol = pd.read_excel("dataset/original_excel/debit_Bertol_inferieur.xlsx")
+    #bertol = pd.read_excel("dataset/original_excel/debit_Bertol_inferieur.xlsx")
 
-    arollaPluie = pd.read_excel("dataset/original_excel/pluie_Arolla.xlsx")
-    arolla_pluie_diff = pluie(arollaPluie)
-    arolla_pluie_diff.to_csv("dataset/clean_data/arollaPluie_diff.csv")
+    #arollaPluie = pd.read_excel("dataset/original_excel/pluie_Arolla.xlsx")
+    #arolla_pluie_diff = pluie(arollaPluie)
+    #arolla_pluie_diff.to_csv("dataset/clean_data/arollaPluie_diff.csv")
 
-    tsijiore = pd.read_excel("dataset/original_excel/debit_Tsijiore.xlsx")
+    tsijiore = pd.read_excel("dataset/original_excel/prise_Gornera.xlsx")
     tsijiore_stack_clean = clean_debit(tsijiore)
-    tsijiore_stack_clean.to_csv("dataset/clean_data/debitTsijiore.csv")
+    tsijiore_stack_clean.to_csv("dataset/clean_data/prise_Gornera.csv")
 
-    arollaTemp = pd.read_excel("dataset/original_excel/temperature_Arolla.xlsx")
-    arollaTemp_stack = temperature(arollaTemp)
-    arollaTemp_stack.to_csv("dataset/clean_data/arollaTemp.csv")
+    #arollaTemp = pd.read_excel("dataset/original_excel/temperature_Arolla.xlsx")
+   # arollaTemp_stack = temperature(arollaTemp)
+    #arollaTemp_stack.to_csv("dataset/clean_data/arollaTemp.csv")
     # diff = arolla_stack.diff()
     #
     # change_of_year = [False] + list((diff.index[1:] - diff.index[0:-1]) > pd.Timedelta(days=1))
