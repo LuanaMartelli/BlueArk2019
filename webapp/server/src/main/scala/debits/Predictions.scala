@@ -33,6 +33,10 @@ object Predictions {
 
   val arollaTsijiores = Point(46.02619, 7.47689)
   val bertolInf = Point(46.00100, 7.49173)
+  val ferpecle = Point(46.05802, 7.54963)
+  val edelweiss = Point(46.14701, 7.92817)
+  val gornera = Point(45.99422, 7.72691)
+  val stafel = Point(46.10155, 7.98082)
 
   val last24Hours = data.range(data.size() - 24 * 4, data.size())
 
@@ -42,7 +46,11 @@ object Predictions {
       last24Hours.x().toList.map { point =>
         List(
           arollaTsijiores -> Source(model.predict(point) * 60 /* m³/min */),
-          bertolInf       -> Source(model.predict(point) * 60 + 2)
+          bertolInf       -> Source(model.predict(point) * 60 + 2),
+          ferpecle        -> Source(model.predict(point) * 60 + 4),
+          edelweiss       -> Source(model.predict(point) * 60 + 6),
+          gornera         -> Source(model.predict(point) * 60 + 8),
+          stafel          -> Source(model.predict(point) * 60 + 10),
         )
       }
     )
