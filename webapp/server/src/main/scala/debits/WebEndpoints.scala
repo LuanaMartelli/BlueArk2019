@@ -7,9 +7,9 @@ class WebEndpoints(val playComponents: server.PlayComponents)
 
   val index = endpoint(get(path), ok(htmlResponse))
 
-  val assets = assetsEndpoint(path / "assets" / assetSegments())
+  val assets = assetsEndpoint(path / "assets" / "webapp" / assetSegments())
 
-  lazy val digests = AssetsDigests.digests
+  lazy val digests = WebappDigests.digests
 
   val routes = routesFromEndpoints(
     index.implementedBy(_ => indexHtml),

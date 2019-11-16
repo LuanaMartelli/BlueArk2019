@@ -6,12 +6,16 @@ import endpoints.algebra
 import io.circe.Codec
 import io.circe.generic.semiauto.deriveCodec
 
-trait DebitsEndpoints extends algebra.Endpoints with algebra.circe.JsonEntitiesFromCodec {
+trait DebitsEndpoints extends algebra.Endpoints with algebra.circe.JsonEntitiesFromCodec with algebra.Assets {
 
   val listDebits: Endpoint[Unit, Run] = endpoint(
     get(path / "debits"),
     ok(jsonResponse[Run])
   )
+
+  val assets = assetsEndpoint(path / "assets" / "debits" / assetSegments())
+
+  lazy val digests = AssetsDigests.digests
 
 }
 

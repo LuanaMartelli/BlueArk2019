@@ -6,13 +6,28 @@ inThisBuild(Seq(
   scalaVersion := "2.12.10"
 ))
 
+val assetsDirectory = (base: File) => base / "src" / "main" / "assets"
+
 val shared =
   crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure).in(file("shared"))
     .settings(
       libraryDependencies ++= Seq(
         "org.julienrf" %%% "endpoints-algebra-circe" % endpointsVersion,
         "io.circe" %%% "circe-generic" % "0.12.3"
-      )
+      ),
+      (sourceGenerators in Compile) += Def.task {
+        AssetsTasks.generateDigests(
+          baseDirectory = baseDirectory.value.getParentFile,
+          targetDirectory = (sourceManaged in Compile).value,
+          generatedObjectName = "AssetsDigests",
+          generatedPackage = Some("debits"),
+          assetsPath = assetsDirectory
+        )
+      }.taskValue
+    )
+    .jvmSettings(
+      // Ajout des assets dans le classpath
+      unmanagedResourceDirectories in Compile += assetsDirectory(baseDirectory.value.getParentFile)
     )
 
 val client =
@@ -61,7 +76,7 @@ val server =
         AssetsTasks.generateDigests(
           baseDirectory = WebKeys.assets.value,
           targetDirectory = (sourceManaged in Compile).value,
-          generatedObjectName = "AssetsDigests",
+          generatedObjectName = "WebappDigests",
           generatedPackage = Some("debits"),
           assetsPath = identity
         )
