@@ -6,13 +6,28 @@ inThisBuild(Seq(
   scalaVersion := "2.12.10"
 ))
 
+val assetsDirectory = (base: File) => base / "src" / "main" / "assets"
+
 val shared =
   crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure).in(file("shared"))
     .settings(
       libraryDependencies ++= Seq(
         "org.julienrf" %%% "endpoints-algebra-circe" % endpointsVersion,
         "io.circe" %%% "circe-generic" % "0.12.3"
-      )
+      ),
+      (sourceGenerators in Compile) += Def.task {
+        AssetsTasks.generateDigests(
+          baseDirectory = baseDirectory.value.getParentFile,
+          targetDirectory = (sourceManaged in Compile).value,
+          generatedObjectName = "AssetsDigests",
+          generatedPackage = Some("debits"),
+          assetsPath = assetsDirectory
+        )
+      }.taskValue
+    )
+    .jvmSettings(
+      // Ajout des assets dans le classpath
+      unmanagedResourceDirectories in Compile += assetsDirectory(baseDirectory.value.getParentFile)
     )
 
 val client =
@@ -25,12 +40,14 @@ val client =
         "org.julienrf" %%% "endpoints-xhr-client" % endpointsVersion,
         "io.github.cquiroz" %%% "scala-java-time" % "2.0.0-RC3",
         "com.raquo" %%% "laminar" % "0.7.1",
-          ScalablyTyped.L.leaflet
+        ScalablyTyped.L.leaflet,
+        ScalablyTyped.P.plotly_dot_js
       ),
       version in webpack := "4.41.2",
       npmDependencies in Compile ++= Seq(
         "leaflet" -> "1.5.1",
-        "materialize-css" -> "1.0.0"
+        "materialize-css" -> "1.0.0",
+        "plotly.js" -> "1.51.1"
       ),
       npmDevDependencies in Compile ++= Seq(
         "webpack-merge" -> "4.2.2",
@@ -49,7 +66,8 @@ val server =
     .settings(
       libraryDependencies ++= Seq(
         "com.github.haifengl" %% "smile-scala" % "1.5.3",
-        "org.julienrf" %% "endpoints-play-server" % endpointsVersion
+        "org.julienrf" %% "endpoints-play-server" % endpointsVersion,
+        "com.nrinaudo" %% "kantan.csv" % "0.6.0"
       ),
       WebKeys.packagePrefix in Assets := "public/",
       WebKeys.exportedMappings in Assets := Seq(), // https://github.com/playframework/playframework/issues/5242
@@ -60,7 +78,7 @@ val server =
         AssetsTasks.generateDigests(
           baseDirectory = WebKeys.assets.value,
           targetDirectory = (sourceManaged in Compile).value,
-          generatedObjectName = "AssetsDigests",
+          generatedObjectName = "WebappDigests",
           generatedPackage = Some("debits"),
           assetsPath = identity
         )

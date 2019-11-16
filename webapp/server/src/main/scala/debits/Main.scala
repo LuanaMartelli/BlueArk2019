@@ -15,8 +15,13 @@ object Main {
     }
   }
 
+  def printPredictions(): Unit = {
+    println(Predictions.model)
+  }
+
   def main(args: Array[String]): Unit = {
     startServer()
+//    printPredictions()
   }
 
 }
