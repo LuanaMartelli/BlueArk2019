@@ -3,11 +3,10 @@ package debits
 import java.net.URL
 import java.time.Instant
 
-import kantan.codecs.resource.ResourceIterator
-import smile.data.{AttributeDataset, NumericAttribute}
-import smile.{read, regression, validation, plot }
-import kantan.csv.ops._
 import kantan.csv._
+import kantan.csv.ops._
+import smile.data.AttributeDataset
+import smile.{regression, validation}
 
 object Predictions {
 
@@ -31,20 +30,17 @@ object Predictions {
 
   val data: AttributeDataset = new AttributeDataset("Debits", features, debits)
 
-  val n = data.size() / 2
+  val n = 58790 // Approximately 2015 to 2018
   val train = data.head(n)
   val model = regression.ols(train.x, train.y)
-//  println(model.predict(Array(10.0, 10.0, 0.0, 10.0, 10.0, 0.0)))
-//  println(model.predict(Array(10.0, 0.0, 2.0, 10.0, 0.0, 2.0)))
 
 //  println(model)
 
   val test = data.range(n, data.size())
   val predictions = test.x.map(model.predict)
+//  println("RMSE in 2019")
 //  println(validation.rmse(test.y, predictions))
 //  println(validation.mad(test.y, predictions))
-
-//  val w = plot.qqplot(train.y, predictions)
 
   val arollaTsijiores = Point(46.02619, 7.47689)
   val bertolInf = Point(46.00100, 7.49173)
@@ -61,11 +57,11 @@ object Predictions {
       last24Hours.x().toList.map { point =>
         List(
           arollaTsijiores -> Source(model.predict(point) * 60 /* m³/min */),
-          bertolInf       -> Source(model.predict(point) * 60 + 2),
-          ferpecle        -> Source(model.predict(point) * 60 + 4),
-          edelweiss       -> Source(model.predict(point) * 60 + 6),
-          gornera         -> Source(model.predict(point) * 60 + 8),
-          stafel          -> Source(model.predict(point) * 60 + 10),
+          bertolInf       -> Source(model.predict(point) * 60 + 3),
+          ferpecle        -> Source(model.predict(point) * 60 + 5),
+          edelweiss       -> Source(model.predict(point) * 60 + 8),
+          gornera         -> Source(model.predict(point) * 60 + 11),
+          stafel          -> Source(model.predict(point) * 60 + 19),
         )
       }
     )
