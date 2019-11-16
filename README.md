@@ -12,8 +12,8 @@ Data is provided for several weather stations and contains flow rates (m^3/s), r
 
 | station    | Température | Soleil   | Pluie    | groupe |
 | ---------- | ----------- | -------- | -------- | ------ |
-| Tsijore    | Arolla      | -        | -        | z      |
-| Bertol Inf | Arolla      | -        | -        | y      |
+| Tsijore    | Arolla      | -        | Arolla   | C      |
+| Bertol Inf | Arolla      | -        | Arolla   | C      |
 | Ferpecle   | Arolla      | Bricola  | Bricola  | A      |
 | Edelweiss  | Zmutt       | Findelen | Findelen | B      |
 | Gornera    | Zmutt       | Findelen | Findelen | B      |
