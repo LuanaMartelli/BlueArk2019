@@ -192,9 +192,44 @@ if __name__ == '__main__':
     mse = np.sqrt(np.mean(e ** 2))
 
 
+    # add sqrt T and d d3
+    Xy = pd.concat(
+        [arollaTemp_stack.abs().apply(lambda x: np.sqrt(x)).shift(-4*24).replace(0, np.NaN),
+         arollaTemp_stack.shift(-4*24).replace(0, np.NaN), np.sqrt(tsijiore_stack_clean).shift(4*24).rolling(window=4*24).mean(), arolla_pluie_diff.shift(12).rolling(window=4*24).sum(), dummy, dummy_hour,
+         np.sqrt(tsijiore_stack_clean.rolling(window=4*24).mean())],
+        axis=1).dropna().astype(float)
+    res = sm.OLS(np.asarray(Xy.iloc[:, -1]), np.asarray(Xy.iloc[:, 0:-1])).fit()
+    res.summary()
+    plt.figure()
+    pd.Series(res.resid, Xy.index).plot()
+    se = pd.concat([Xy.iloc[:,-1] + res.resid, Xy.iloc[:,-1]],axis=1)
+    se.columns = ["predicted","actual"]
+    plt.figure();se.plot()
+    plt.figure();se.plot.scatter(x=se.columns[0],y=se.columns[1])
 
 
-
+    D = np.sqrt(tsijiore_stack_clean).shift(12)
+    Ds = D.shift(4 * 3) - D
+    ddd = Ds.shift(4 * 24).rolling(window=4 * 24 * 3).mean()
+    Xy = pd.concat(
+        [
+         arollaTemp_stack.shift(12).replace(0, np.NaN), np.sqrt(tsijiore_stack_clean).shift(12), ddd,
+         arolla_pluie_diff.shift(12), dummy, dummy_hour,
+         np.sqrt(tsijiore_stack_clean)],
+        axis=1).dropna().astype(float)
+    res = sm.OLS(np.asarray(Xy.iloc[:, -1]), np.asarray(Xy.iloc[:, 0:-1])).fit()
+    res.summary()
+    plt.figure()
+    pd.Series(res.resid, Xy.index).plot()
+    se = pd.concat([Xy.iloc[:, -1] + res.resid, Xy.iloc[:, -1]], axis=1)
+    se.columns = ["predicted", "actual"]
+    plt.figure();
+    se.plot()
+    plt.figure();
+    se.plot.scatter(x=se.columns[0], y=se.columns[1])
+    e = pd.Series(res.resid, Xy.index)[Xy.index.month != 5]
+    error.mean()
+    mse = np.sqrt(np.mean(e ** 2))
 
 # diff = arolla_stack.diff()
     #
