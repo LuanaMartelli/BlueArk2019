@@ -96,6 +96,7 @@ modelname = "24hours_woTemp_sep"
 nSamples = 3000  #3500
 PredictTemp = False
 SeparateInputs = False
+
 #####Load Data
 Debit, time = readData("dataset/clean_data/debitTsijiore.csv")
 Temp, time = readData("dataset/clean_data/arollaTemp.csv")
